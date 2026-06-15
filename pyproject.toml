@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "timur-xai"
 version = "1.0.0"
 authors = [
-  { name="Neşet Koçkar" }
+  { name="Neşet Koçkar","Ahmet Yasin Selçuk" }
 ]
 description = "Dimensionless Physics-Informed Symbolic Regression & Neural Network Engine"
 readme = "README.md"
