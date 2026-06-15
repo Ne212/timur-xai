@@ -232,6 +232,28 @@ class Gatekeeper:
     def analyze(self, X: np.ndarray, y: np.ndarray) -> GatekeeperReport:
         X, y = self._validate(X, y)
         n, p = X.shape
+
+        # Mutlak Sabit Kaçış Kapsülü (0 Özellik Paradoksu Düzeltmesi)
+        if p == 0:
+            lin_thr, pysr_thr = self._adaptive_thresholds(n)
+            return GatekeeperReport(
+                nonlinearity_score=0.0,
+                routing_decision="linear",
+                linear_r2=1.0,
+                linear_residual_score=0.0,
+                correlation_gap_score=0.0,
+                pca_dim_score=0.0,
+                mi_score=0.0,
+                feature_profiles=[],
+                selected_feature_idx=[],
+                n_samples=n,
+                n_features=0,
+                n_selected=0,
+                adaptive_linear_thr=lin_thr,
+                adaptive_pysr_thr=pysr_thr,
+                weights=dict(COMPONENT_WEIGHTS)
+            )
+
         names_all = self._get_names(p)
 
         # Faz 0: MI bazlı özellik eleme
@@ -240,6 +262,8 @@ class Gatekeeper:
         n_sel     = len(sel_idx)
         names_sel = [names_all[i] for i in sel_idx]
         X_sc      = self._scaler.fit_transform(X_sel)
+        
+    
 
         # Faz 1: Dört bileşen
         r2, s_res = self._score_linear_residual(X_sc, y)
@@ -774,32 +798,53 @@ class TIMURSymbolicRouter:
 
         return result
 
-    def _run_linear(self, X, y, names, gk_report, t0) -> DiscoveryResult:
-        if self.verbose:
-            print("\n[TIMUR] ─── Faz 1 Ön Eğitim: Lineer Uzman ─────────────")
+    def _run_linear(self, X: np.ndarray, y: np.ndarray, names: list,
+                    gk_report, t0: float):
+        n_samples, n_features_original = X.shape
 
-        eng = _LinearEngine(feature_names=names)
-        eng.fit(X, y)
+        if n_features_original == 0:
+            X_fit = np.ones((n_samples, 1))
+            names_fit = ["Mutlak_Sabit"]
+        else:
+            X_fit = X
+            names_fit = names
 
-        eq  = eng.equation_str(names)
-        r2  = eng.r2 if hasattr(eng, 'r2') and eng._r2 is not None else r2_score(y, eng.predict(X))
+        from sklearn.linear_model import LinearRegression
+        import torch
+        
+        # Ridge(alpha=1.0) yerine saf Doğrusal Regresyon (Cezasız, Ölçek Bağımsız)
+        model = LinearRegression()
+        model.fit(X_fit, y)
+        
+        if n_features_original == 0:
+            eq_str = f"y = {model.intercept_:.4f}  [Saf Sabit]"
+            bias_t = float(model.intercept_)
+            def frozen_fn(x: torch.Tensor) -> torch.Tensor:
+                return torch.full((x.shape[0],), bias_t, device=x.device, dtype=torch.float32)
+        else:
+            # 1e-25 gibi astronomik derecede küçük katsayıları bile koru
+            terms = [f"{coef:.4g}*{name}" for coef, name in zip(model.coef_, names_fit) if abs(coef) > 1e-35]
+            eq_str = "y = " + " + ".join(terms) + f" + {model.intercept_:.4g}"
+            coef_t = torch.tensor(model.coef_, dtype=torch.float32)
+            intercept_t = torch.tensor(model.intercept_, dtype=torch.float32)
+            def frozen_fn(x: torch.Tensor) -> torch.Tensor:
+                return torch.matmul(x, coef_t) + intercept_t
 
-        if self.verbose:
-            print(f"  Ön eğitim R²: {r2:.4f}  [Lineer — rafine atlandı]")
+        r2 = float(model.score(X_fit, y))
 
         return DiscoveryResult(
-            equation_str = eq,
-            frozen_fn    = eng.frozen_fn(),
-            coef_        = eng._coef,
-            intercept_   = eng._intercept,
+            equation_str = eq_str,
+            frozen_fn    = frozen_fn,
+            coef_        = model.coef_,
+            intercept_   = float(model.intercept_),
             r2_pretrain  = r2,
             r2_refine    = r2,
             routing      = "linear",
             gatekeeper   = gk_report,
             fit_time_s   = time.perf_counter() - t0,
-            metadata     = {"chosen_reg": eng._chosen, "alpha": eng._alpha},
         )
-
+    
+    
     def _run_poly(self, X, y, names, gk_report, routing, t0) -> DiscoveryResult:
         if self.verbose:
             print(f"\n[TIMUR] ─── Faz 1 Ön Eğitim: Polinom (derece={self.pretrain_degree}) ─")

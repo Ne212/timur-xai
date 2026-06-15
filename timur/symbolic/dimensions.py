@@ -96,3 +96,34 @@ class DimensionalAnalyzer:
         pi_names = [f"Pi_{i+1}" for i in range(len(feature_pi_indices))]
         
         return X_pi, y_pi, pi_names
+    
+    def inverse_transform_target(self, X, y_pi, constants_dict):
+        """Tahmin edilen boyutsuz y_pi değerini, orijinal fiziksel y değerine (SI) geri yansıtır."""
+        n_samples = X.shape[0]
+        n_features = X.shape[1]
+        n_vars = len(self.all_dims)
+        
+        V = np.zeros((n_samples, n_vars))
+        V[:, :n_features] = X
+        
+        const_vals = list(constants_dict.values())
+        for i, val in enumerate(const_vals):
+            V[:, n_features + i] = val
+            
+        # Hedef Pi grubunu bul
+        target_row_idx = n_vars - 1
+        target_pi_idx = -1
+        for j in range(self.pi_exponents.shape[1]):
+            if abs(self.pi_exponents[target_row_idx, j]) > 1e-5:
+                target_pi_idx = j
+                break
+                
+        # Çarpanı hesapla (hedef değişken hariç diğerlerinin üssü)
+        multiplier = np.ones(n_samples)
+        for i in range(n_vars - 1):
+            power = self.pi_exponents[i, target_pi_idx]
+            if abs(power) > 1e-5:
+                multiplier *= np.power(np.abs(V[:, i]), power)
+                
+        # Pi uzayından klasik SI dünyasına çıkış: y = y_pi / çarpan
+        return y_pi / multiplier

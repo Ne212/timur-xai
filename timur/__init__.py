@@ -157,19 +157,48 @@ class TIMURModel:
         self._fitted = True
         return self
 
-    def predict(self, X: np.ndarray) -> np.ndarray:
+    def transform(self, X: np.ndarray) -> np.ndarray:
+        """Ham veriyi (X) eğitilmiş boyutsuz Pi uzayına dönüştürür."""
         self._check_fitted()
-        X_t = torch.tensor(np.array(X, dtype=np.float32), dtype=torch.float32)
+        if hasattr(self, '_dim_analyzer') and self._dim_analyzer is not None:
+            const_vals = {k: c[0] for k, c in self.constants.items()}
+            # X_pi için y değerine 1'lerden oluşan sahte (dummy) bir matris gönderiyoruz
+            dummy_y = np.ones(X.shape[0])
+            X_pi, _, _ = self._dim_analyzer.transform_to_pi(X, dummy_y, const_vals)
+            return X_pi
+        return X
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """PINN ağı üzerinden tahmin yapar ve sonucu klasik SI birimlerine geri yansıtır."""
+        self._check_fitted()
+        X_transformed = self.transform(X)
+        X_t = torch.tensor(np.array(X_transformed, dtype=np.float32), dtype=torch.float32)
+        
         self._net.eval()
         with torch.no_grad():
-            return self._net(X_t).numpy()
+            y_pi_pred = self._net(X_t).numpy().flatten()
+            
+        # Boyutsuzlaştırma aktifse, saf sabiti gerçek dünyadaki SI birimine çarparak çıkar
+        if hasattr(self, '_dim_analyzer') and self._dim_analyzer is not None:
+            const_vals = {k: c[0] for k, c in self.constants.items()}
+            return self._dim_analyzer.inverse_transform_target(X, y_pi_pred, const_vals)
+            
+        return y_pi_pred
 
     def predict_symbolic(self, X: np.ndarray) -> np.ndarray:
-        """Sadece dondurulmuş sembolik denklem ile tahmin."""
+        """Sembolik motorun bulduğu denklem üzerinden tahmin yapar ve SI birimlerine geri yansıtır."""
         self._check_fitted()
-        X_t = torch.tensor(np.array(X, dtype=np.float32), dtype=torch.float32)
+        X_transformed = self.transform(X)
+        X_t = torch.tensor(np.array(X_transformed, dtype=np.float32), dtype=torch.float32)
+        
         with torch.no_grad():
-            return self._result.frozen_fn(X_t).numpy()
+            y_pi_pred = self._result.frozen_fn(X_t).numpy().flatten()
+            
+        if hasattr(self, '_dim_analyzer') and self._dim_analyzer is not None:
+            const_vals = {k: c[0] for k, c in self.constants.items()}
+            return self._dim_analyzer.inverse_transform_target(X, y_pi_pred, const_vals)
+            
+        return y_pi_pred
 
     def score(self, X: np.ndarray, y: np.ndarray) -> float:
         return float(_r2_score(y, self.predict(X)))
