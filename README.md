@@ -8,7 +8,7 @@ Unlike standard machine learning models that blindly fit curves, TIMUR utilizes 
 ## Features
 * **Autonomous Dimensional Analysis:** Pass your features, target, and SI constants. TIMUR handles the Null Space matrix operations and transforms the space into dimensionless Pi groups.
 * **Evolutionary Symbolic Discovery:** Escapes polynomial approximations. Finds complex fractional, exponential, and trigonometric truths underlying the data.
-* **Light-Speed PINN Integration:** Converts the discovered physical law into a fully differentiable PyTorch tensor space without string-parsing overhead.
+* **PINN Integration:** Converts the discovered physical law into a fully differentiable PyTorch tensor space without string-parsing overhead.
 * **The Gatekeeper:** Analyzes data non-linearity to autonomously route between Ridge/Lasso, Polynomial, or Genetic Evolutionary engines.
 
 ## Installation
