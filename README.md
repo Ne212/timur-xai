@@ -45,11 +45,8 @@ model.fit(X, y)
 
 # Output the symbolic XAI discovery report
 print(model.get_xai_report())
-Licensing & Commercial Use
-Dual-License Strategy
+## License
 
-TIMUR XAI is released under the GNU General Public License v3.0 (GPLv3).
+TIMUR-XAI is released under the **MIT License** — free for any use, including commercial, closed-source, and research. No permission needed. Just keep the copyright notice.
 
-Academic & Open Source: Free to use, modify, and distribute strictly for non-commercial, open-source academic research.
-
-Commercial / Enterprise: If you intend to use TIMUR XAI within a closed-source, proprietary, or commercial product (e.g., industrial R&D, corporate AI models), a Commercial License is strictly required. Contact the author directly to acquire commercial rights.
+See the [LICENSE](LICENSE) file for details.
