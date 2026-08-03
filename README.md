@@ -20,8 +20,10 @@ Unlike standard machine learning models that blindly fit curves to scale-depende
 ```bash
 pip install --upgrade timur-xai
 python -c "import pysr; pysr.install()"
-Quick Start
-Python
+```
+
+## Quick Start
+```python
 from timur import TIMURModel
 import scipy.constants as const
 
@@ -45,6 +47,8 @@ model.fit(X, y)
 
 # Output the symbolic XAI discovery report
 print(model.get_xai_report())
+```
+
 ## License
 
 TIMUR-XAI is released under the **MIT License** — free for any use, including commercial, closed-source, and research. No permission needed. Just keep the copyright notice.
