@@ -12,3 +12,7 @@ build/
 .env.*
 *.pkl
 outputs/
+timur_benchmark_results/
+evolve_benchmark_results/
+evolve_demo_archive.json
+evolve_demo_planck_archive.json
