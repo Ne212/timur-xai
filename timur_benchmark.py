@@ -209,6 +209,7 @@ def make_ds1():
         lambda_sym=0.5,
         linear_threshold=0.0,
         pysr_threshold=0.0,
+        data_loss="weighted_mse",   # B(λ,T) 8 onluk mertebe aralığı → MAPE-yaklaşık kayıp
         verbose=True,
     )
     return (

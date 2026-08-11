@@ -1,0 +1,142 @@
+{
+  "grid_shape": [
+    4,
+    4,
+    4
+  ],
+  "coverage": 6,
+  "cells": [
+    {
+      "cell": [
+        3,
+        2,
+        3
+      ],
+      "expr_str": "y = sin(exp(-0.653/Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB)))*Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB)*3*pi/4",
+      "descriptor": [
+        3,
+        2,
+        3
+      ],
+      "fitness": 0.9139731775951067,
+      "source": "mutation",
+      "metadata": {
+        "model": "<timur.TIMURModel object at 0x7aecd418b990>",
+        "routing": "pysr",
+        "r2_pretrain": 0.9997742984686104,
+        "r2_refine": 0.9997742984686104,
+        "judge_report": "{'r2': 0.9139731775951067, 'r2_threshold': 0.5, 'r2_passed': True, 'finiteness': {'passed': True, 'n_samples': 200, 'n_nonfinite': 0}, 'limit_behavior': {'passed': True, 'feat1_monotonic_increasing': {'passed': np.True_}, 'feat0_finite_at_zero': {'passed': True}, 'feat0_finite_at_inf': {'passed': True}}, 'accepted': True}"
+      }
+    },
+    {
+      "cell": [
+        3,
+        2,
+        1
+      ],
+      "expr_str": "y = 2*pi/3/(exp(1.017/Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB)) - 0.9829)",
+      "descriptor": [
+        3,
+        2,
+        1
+      ],
+      "fitness": 0.9988006661122668,
+      "source": "seed",
+      "metadata": {
+        "model": "<timur.TIMURModel object at 0x7aecd4f01010>",
+        "routing": "pysr",
+        "r2_pretrain": 0.999802110024642,
+        "r2_refine": 0.999802110024642,
+        "judge_report": "{'r2': 0.9988006661122668, 'r2_threshold': 0.5, 'r2_passed': True, 'finiteness': {'passed': True, 'n_samples': 200, 'n_nonfinite': 0}, 'limit_behavior': {'passed': True, 'feat1_monotonic_increasing': {'passed': np.True_}, 'feat0_finite_at_zero': {'passed': True}, 'feat0_finite_at_inf': {'passed': True}}, 'accepted': True}"
+      }
+    },
+    {
+      "cell": [
+        2,
+        2,
+        3
+      ],
+      "expr_str": "y = Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB)*sin(exp(-0.6532/Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB)))/0.4273",
+      "descriptor": [
+        2,
+        2,
+        3
+      ],
+      "fitness": 0.9140897465693544,
+      "source": "mutation",
+      "metadata": {
+        "model": "<timur.TIMURModel object at 0x7aecd4f032d0>",
+        "routing": "pysr",
+        "r2_pretrain": 0.9998038745088035,
+        "r2_refine": 0.9998038745088035,
+        "judge_report": "{'r2': 0.9140897465693544, 'r2_threshold': 0.5, 'r2_passed': True, 'finiteness': {'passed': True, 'n_samples': 200, 'n_nonfinite': 0}, 'limit_behavior': {'passed': True, 'feat1_monotonic_increasing': {'passed': np.True_}, 'feat0_finite_at_zero': {'passed': True}, 'feat0_finite_at_inf': {'passed': True}}, 'accepted': True}"
+      }
+    },
+    {
+      "cell": [
+        2,
+        1,
+        1
+      ],
+      "expr_str": "y = Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB)*exp(0.7511 - 0.6045/Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB))",
+      "descriptor": [
+        2,
+        1,
+        1
+      ],
+      "fitness": 0.7717191145470111,
+      "source": "mutation",
+      "metadata": {
+        "model": "<timur.TIMURModel object at 0x7aece3500c90>",
+        "routing": "pysr",
+        "r2_pretrain": 0.9996175316552265,
+        "r2_refine": 0.9996175316552265,
+        "judge_report": "{'r2': 0.7717191145470111, 'r2_threshold': 0.5, 'r2_passed': True, 'finiteness': {'passed': True, 'n_samples': 200, 'n_nonfinite': 0}, 'limit_behavior': {'passed': True, 'feat1_monotonic_increasing': {'passed': np.True_}, 'feat0_finite_at_zero': {'passed': True}, 'feat0_finite_at_inf': {'passed': True}}, 'accepted': True}"
+      }
+    },
+    {
+      "cell": [
+        3,
+        1,
+        1
+      ],
+      "expr_str": "y = (Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB)*1.801 + 1.377)/exp(1/Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB))",
+      "descriptor": [
+        3,
+        1,
+        1
+      ],
+      "fitness": 0.9888276250176747,
+      "source": "mutation",
+      "metadata": {
+        "model": "<timur.TIMURModel object at 0x7aed083b8b90>",
+        "routing": "pysr",
+        "r2_pretrain": 0.9996802457644546,
+        "r2_refine": 0.9996802457644546,
+        "judge_report": "{'r2': 0.9888276250176747, 'r2_threshold': 0.5, 'r2_passed': True, 'finiteness': {'passed': True, 'n_samples': 200, 'n_nonfinite': 0}, 'limit_behavior': {'passed': True, 'feat1_monotonic_increasing': {'passed': np.True_}, 'feat0_finite_at_zero': {'passed': True}, 'feat0_finite_at_inf': {'passed': True}}, 'accepted': True}"
+      }
+    },
+    {
+      "cell": [
+        2,
+        2,
+        1
+      ],
+      "expr_str": "y = 2.001/(exp(1/Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB)) - 0.9975)",
+      "descriptor": [
+        2,
+        2,
+        1
+      ],
+      "fitness": 0.9999140939835316,
+      "source": "mutation",
+      "metadata": {
+        "model": "<timur.TIMURModel object at 0x7aecd4b2b990>",
+        "routing": "pysr",
+        "r2_pretrain": 0.9997515482095836,
+        "r2_refine": 0.9997515482095836,
+        "judge_report": "{'r2': 0.9999140939835316, 'r2_threshold': 0.5, 'r2_passed': True, 'finiteness': {'passed': True, 'n_samples': 200, 'n_nonfinite': 0}, 'limit_behavior': {'passed': True, 'feat1_monotonic_increasing': {'passed': np.True_}, 'feat0_finite_at_zero': {'passed': True}, 'feat0_finite_at_inf': {'passed': True}}, 'accepted': True}"
+      }
+    }
+  ]
+}

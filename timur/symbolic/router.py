@@ -48,6 +48,59 @@ from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
 _log = logging.getLogger(__name__)
 
+
+# ─── Sabit Sadeleştirici ──────────────────────────────────────────────────────
+
+def _prettify_constants(sympy_expr) -> str:
+    """
+    PySR'ın bulduğu SymPy ifadesindeki ondalıklı sabitleri sadeleştirir:
+      1. π ve e'nin basit katlarına yakınsa sembolik karşılığını kullan
+         (tolerans: <%1 bağıl hata).
+      2. Değilse 4 anlamlı rakama yuvarla.
+    Amac: "3.248718" yerine "3.249", "1.5708" yerine "pi/2" göstermek.
+    """
+    import sympy as sp
+    import re
+
+    # Aday matematiksel sabitler ve kısa isimleri
+    CANDIDATES: List[Tuple[Any, str]] = []
+    for n in range(1, 7):
+        for m in [1, 2, 3, 4, 6]:
+            val = float(n * np.pi / m)
+            CANDIDATES.append((val, f"{n}*pi/{m}" if m > 1 else f"{n}*pi"))
+    for n in range(1, 4):
+        CANDIDATES.append((float(n * np.e),  f"{n}*E" if n > 1 else "E"))
+    CANDIDATES.append((float(np.sqrt(2)), "sqrt(2)"))
+    CANDIDATES.append((float(np.sqrt(3)), "sqrt(3)"))
+    # (val, label) — uzun isimden kısaya arama için sırala (önce büyük değerler)
+    CANDIDATES.sort(key=lambda x: x[0], reverse=True)
+
+    def _fmt(val: float) -> str:
+        abs_val = abs(val)
+        sign    = "-" if val < 0 else ""
+        for cand_val, cand_str in CANDIDATES:
+            if abs_val > 1e-12 and abs(abs_val - cand_val) / cand_val < 0.01:
+                return f"{sign}{cand_str}"
+        # Tam sayıya yakınsa int göster
+        rounded_int = int(round(abs_val))
+        if abs(abs_val - rounded_int) < 1e-4 and rounded_int <= 100:
+            return f"{sign}{rounded_int}"
+        return f"{val:.4g}"
+
+    # SymPy ifadesini string'e çevir, Float sabitlerini _fmt ile işle
+    raw_str = str(sympy_expr)
+
+    def _replace(m):
+        s = m.group(0)
+        try:
+            return _fmt(float(s))
+        except ValueError:
+            return s
+
+    pretty = re.sub(r'-?\d+\.\d+(?:[eE][+-]?\d+)?', _replace, raw_str)
+    return pretty
+
+
 # ─── Sabitler ─────────────────────────────────────────────────────────────────
 
 COMPONENT_WEIGHTS: Dict[str, float] = {
@@ -653,25 +706,25 @@ class _PySREngine:
         self._r2 = None
 
     def fit(self, X, y):
-        # Sadece ihtiyaç anında import edilir
         from pysr import PySRRegressor
-        
-        # Güncellenmiş, temiz PySR API'si
+
         self.model = PySRRegressor(
-            niterations=1000,      # İsteğin doğrultusunda 1000'e çıkardık
-            population_size=40,    # Daha fazla çeşitlilik (evrim için kritik)
+            niterations=1000,
+            population_size=40,
             binary_operators=["+", "-", "*", "/"],
             unary_operators=["exp", "log", "sin", "inv"],
             model_selection="best",
-            # loss yerine elementwise_loss kullanıyoruz
             elementwise_loss="loss(prediction, target) = (prediction - target)^2",
-            # enable_autodiff=True satırını KALDIRDIK (artık otomatik)
-            verbosity=0
+            # Karmaşıklık cezası: sabit sayıları denklemde ucuza çıkmasın.
+            # parsimony  → her birim karmaşıklık başına kayıp cezası (yüksek = daha sade)
+            # complexity_of_constants → her sayısal sabit bu kadar karmaşıklık sayılır
+            parsimony=0.05,
+            complexity_of_constants=3,
+            verbosity=0,
         )
-        
-        # PySR'ı çalıştır
+
         self.model.fit(X, y, variable_names=self.feature_names)
-        
+
         y_pred = self.model.predict(X)
         self._r2 = float(r2_score(y, y_pred))
         return self
@@ -680,8 +733,8 @@ class _PySREngine:
         return self.model.predict(X)
 
     def equation_str(self) -> str:
-        # En iyi denklemi SymPy formatında döndürür
-        return f"y = {self.model.sympy()}"
+        raw = self.model.sympy()
+        return f"y = {_prettify_constants(raw)}"
 
     def frozen_fn(self) -> Callable[[torch.Tensor], torch.Tensor]:
         """

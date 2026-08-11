@@ -8,7 +8,7 @@ version = "1.1.0"
 authors = [
   { name="Neşet Koçkar" }
 ]
-description = "Dimensionless Physics-Informed Symbolic Regression & Neural Network Engine"
+description = "Autonomous Dimensionless Physical Law Discovery and PINN Engine via Buckingham Pi"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
@@ -21,12 +21,15 @@ classifiers = [
 ]
 dependencies = [
     "numpy",
+    "torch",
+    "scikit-learn",
     "scipy",
     "sympy",
-    "scikit-learn",
-    "torch",
     "pysr"
 ]
 
 [project.urls]
 "Homepage" = "https://github.com/Ne212/timur-xai"
+
+[tool.setuptools.packages.find]
+include = ["timur", "timur.*"]

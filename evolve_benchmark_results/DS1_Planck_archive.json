@@ -1,0 +1,98 @@
+{
+  "grid_shape": [
+    4,
+    4,
+    4
+  ],
+  "coverage": 4,
+  "cells": [
+    {
+      "cell": [
+        3,
+        1,
+        1
+      ],
+      "expr_str": "y = (Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB) + Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB) + 0.7719)*exp(-0.868/Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB))",
+      "descriptor": [
+        3,
+        1,
+        1
+      ],
+      "fitness": 0.9878675644217811,
+      "source": "mutation",
+      "metadata": {
+        "model": "<timur.TIMURModel object at 0x70bd56b473d0>",
+        "routing": "pysr",
+        "r2_pretrain": 0.9997756503636595,
+        "r2_refine": 0.9997756503636595,
+        "judge_report": "{'r2': 0.9878675644217811, 'r2_threshold': 0.5, 'r2_passed': True, 'finiteness': {'passed': True, 'n_samples': 200, 'n_nonfinite': 0}, 'limit_behavior': {'passed': True, 'feat1_monotonic_increasing': {'passed': np.True_}, 'feat0_finite_at_zero': {'passed': True}, 'feat0_finite_at_inf': {'passed': True}}, 'symmetry': {'passed': True, 'reason': 'kısıt verilmedi, atlandı'}, 'conservation': {'passed': True, 'reason': 'kısıt verilmedi, atlandı'}, 'accepted': True}"
+      }
+    },
+    {
+      "cell": [
+        3,
+        2,
+        3
+      ],
+      "expr_str": "y = sin(exp(-0.6535/Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB)))*3*pi/4*Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB)",
+      "descriptor": [
+        3,
+        2,
+        3
+      ],
+      "fitness": 0.9155449232794345,
+      "source": "mutation",
+      "metadata": {
+        "model": "<timur.TIMURModel object at 0x70bd5318f790>",
+        "routing": "pysr",
+        "r2_pretrain": 0.9997646277663288,
+        "r2_refine": 0.9997646277663288,
+        "judge_report": "{'r2': 0.9155449232794345, 'r2_threshold': 0.5, 'r2_passed': True, 'finiteness': {'passed': True, 'n_samples': 200, 'n_nonfinite': 0}, 'limit_behavior': {'passed': True, 'feat1_monotonic_increasing': {'passed': np.True_}, 'feat0_finite_at_zero': {'passed': True}, 'feat0_finite_at_inf': {'passed': True}}, 'symmetry': {'passed': True, 'reason': 'kısıt verilmedi, atlandı'}, 'conservation': {'passed': True, 'reason': 'kısıt verilmedi, atlandı'}, 'accepted': True}"
+      }
+    },
+    {
+      "cell": [
+        2,
+        2,
+        3
+      ],
+      "expr_str": "y = Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB)*sin(exp(-0.6505/Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB)))*2.332",
+      "descriptor": [
+        2,
+        2,
+        3
+      ],
+      "fitness": 0.9077204551349733,
+      "source": "mutation",
+      "metadata": {
+        "model": "<timur.TIMURModel object at 0x70bd55b7fe10>",
+        "routing": "pysr",
+        "r2_pretrain": 0.9997749592870652,
+        "r2_refine": 0.9997749592870652,
+        "judge_report": "{'r2': 0.9077204551349733, 'r2_threshold': 0.5, 'r2_passed': True, 'finiteness': {'passed': True, 'n_samples': 200, 'n_nonfinite': 0}, 'limit_behavior': {'passed': True, 'feat1_monotonic_increasing': {'passed': np.True_}, 'feat0_finite_at_zero': {'passed': True}, 'feat0_finite_at_inf': {'passed': True}}, 'symmetry': {'passed': True, 'reason': 'kısıt verilmedi, atlandı'}, 'conservation': {'passed': True, 'reason': 'kısıt verilmedi, atlandı'}, 'accepted': True}"
+      }
+    },
+    {
+      "cell": [
+        2,
+        2,
+        1
+      ],
+      "expr_str": "y = 2.003/(exp(1/Pi(dalga_boyu·sicaklik·h⁻¹·c⁻¹·kB)) - 0.9968)",
+      "descriptor": [
+        2,
+        2,
+        1
+      ],
+      "fitness": 0.9998994554316931,
+      "source": "mutation",
+      "metadata": {
+        "model": "<timur.TIMURModel object at 0x70bd55fd9c50>",
+        "routing": "pysr",
+        "r2_pretrain": 0.9998117074795053,
+        "r2_refine": 0.9998117074795053,
+        "judge_report": "{'r2': 0.9998994554316931, 'r2_threshold': 0.5, 'r2_passed': True, 'finiteness': {'passed': True, 'n_samples': 200, 'n_nonfinite': 0}, 'limit_behavior': {'passed': True, 'feat1_monotonic_increasing': {'passed': np.True_}, 'feat0_finite_at_zero': {'passed': True}, 'feat0_finite_at_inf': {'passed': True}}, 'symmetry': {'passed': True, 'reason': 'kısıt verilmedi, atlandı'}, 'conservation': {'passed': True, 'reason': 'kısıt verilmedi, atlandı'}, 'accepted': True}"
+      }
+    }
+  ]
+}
