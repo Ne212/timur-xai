@@ -1,4 +1,4 @@
-# TIMUR XAI (v1.1.0)
+# TIMUR XAI (v1.2.0)
 **Autonomous Dimensionless Physics-Informed Symbolic Regression Engine**
 
 TIMUR (Theoretical Inference and Multiphysics Universal Regressor) is an advanced, autonomous Explainable AI (XAI) architecture that bridges the gap between raw dimensional data, universal physical constants, and deep learning. 
@@ -48,6 +48,55 @@ model.fit(X, y)
 # Output the symbolic XAI discovery report
 print(model.get_xai_report())
 ```
+
+### 🚀 What's New in v1.2.0: Autonomous Discovery via MAP-Elites
+
+`TIMURModel.fit()` is single-pass: it runs `discover()` once and returns one
+result. The new `timur/evolve/` layer sits on top of that — without changing
+any core `timur/`, `timur/symbolic/`, or `timur/pinn/` code — and turns TIMUR
+into a **black-box candidate generator** that is called repeatedly, scored,
+and archived for diversity instead of just accuracy.
+
+* **MAP-Elites archive:** candidates are mapped into a 3-axis behavioral grid
+  — `(complexity, depth, operator_family)` — and only the single best (highest
+  fitness) candidate per cell is kept, preserving a diverse population of
+  equations instead of collapsing to one.
+* **Evolutionary loop:** `evolve()` seeds the archive with N bootstrap-resampled
+  TIMUR runs, then iterates M times — sample an elite, mutate it, re-evaluate,
+  and add it back if it's accepted — until `n_iterations` is reached or fitness
+  plateaus for `patience` iterations.
+* **Multi-layered physical judge (`judge.py`):** every candidate must clear up
+  to five independent tests before entering the archive:
+  1. **R² threshold** on a held-out validation split (default 0.5)
+  2. **Finiteness** — no NaN/Inf across a sampled input domain
+  3. **Limit / monotonicity behavior** (`LimitConstraint`) — e.g. finite at
+     zero/infinity, monotonic increasing/decreasing
+  4. **Symmetry** (`SymmetryConstraint`) — even/odd/scale invariance,
+     e.g. `f(a·x) = a^k·f(x)`
+  5. **Conservation** (`ConservationConstraint`) — a trapezoidal-integral
+     check against an expected constant or axis-independence
+
+  Dimensional consistency is not a separate test: since every candidate is
+  already generated in Buckingham Pi space, it's structurally guaranteed.
+  All constraint types are optional and None-safe — omitting them just skips
+  that test.
+
+### Five-Law Benchmark Validation
+
+`evolve_benchmark.py` runs the full evolutionary loop against five physical
+laws (same data-generation logic as `timur_benchmark.py`):
+
+| Law | R² | Status |
+|---|---|---|
+| DS1 — Planck Blackbody Radiation | 0.7756 | ✓ Passed |
+| DS2 — Stefan-Boltzmann Power Density | 1.0000 | ✓ Passed |
+| DS3 — Stokes' Drag Force | 1.0000 | ✓ Passed |
+| DS4 — Gravitational Potential Energy | 0.9974 | ✓ Passed |
+| DS5 — Wien's Displacement Law | 1.0000 | ✓ Passed |
+
+Archived candidates for each law are in `evolve_benchmark_results/`. See
+`timur/evolve/README.md` for architecture details and `evolve_demo.py` /
+`evolve_demo_planck.py` for end-to-end runnable examples.
 
 ## License
 
