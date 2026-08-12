@@ -1,105 +1,163 @@
-# TIMUR XAI (v1.2.0)
-**Autonomous Dimensionless Physics-Informed Symbolic Regression Engine**
+# TIMUR-XAI
 
-TIMUR (Theoretical Inference and Multiphysics Universal Regressor) is an advanced, autonomous Explainable AI (XAI) architecture that bridges the gap between raw dimensional data, universal physical constants, and deep learning. 
+**Autonomous dimensionless physics-informed symbolic regression.**
 
-Unlike standard machine learning models that blindly fit curves to scale-dependent data, TIMUR utilizes the **Buckingham $\pi$ Theorem** to autonomously project variables into a scale-invariant dimensionless space. It then leverages evolutionary genetic algorithms (PySR) and purely analytical engines to discover the exact underlying fundamental physical equations. Finally, it integrates these absolute truths into a Physics-Informed Neural Network (PINN).
+TIMUR (Theoretical Inference and Multiphysics Universal Regressor) takes raw
+dimensional data plus the relevant physical constants and tries to recover the
+underlying physical law as a compact symbolic expression — not a black-box fit.
 
-### 🚀 What's New in v1.1.0
-* **Autonomous Inverse Transformation:** Discovered dimensionless invariants ($\Pi$-space) are now autonomously mapped back into exact Standard International (SI) units, bridging the gap between symbolic logic and real-world physical reality.
-* **Zero-Dimensional PyTorch Shields:** Analytically resolves absolute constants (e.g., $6\pi$ in Stokes' Law) directly into the tensor space, bypassing standard neural network matrix limitations.
-* **Pure Analytic Scaling:** Removed L2 regularization penalties from the dimensional engine, allowing the discovery of astronomical scaling ratios (e.g., $10^{-27}$ in Universal Gravitation) without vanishing coefficient errors.
+The core idea: instead of fitting curves to scale-dependent data, TIMUR uses the
+**Buckingham π theorem** to project the variables into a dimensionless space
+first, discovers the law there (analytically when it can, with genetic symbolic
+regression when it can't), and maps the result back into SI units. A physical
+judge then filters candidates that fit well numerically but violate physical
+constraints.
 
-## Features
-* **Zero-Prior Dimensional Analysis:** Pass your features, target, and physical constants. TIMUR dynamically computes the Null Space matrix and transforms the chaotic data into scale-invariant dimensionless Pi groups.
-* **Evolutionary Symbolic Discovery:** Escapes polynomial approximations. Genetically evolves complex fractional, exponential, and trigonometric truths (e.g., Planck's Law of Black-Body Radiation) underlying the data.
-* **PINN Integration:** Converts the discovered physical law into a fully differentiable, frozen PyTorch tensor space without string-parsing overhead.
-* **The Neuro-Symbolic Gatekeeper:** Analyzes data non-linearity to autonomously route the logic between Analytical Linear solvers or Evolutionary Genetic (PySR) engines.
+> **Scope, honestly.** This is a tool for the *"given reasonably clean data,
+> what's the compact law"* step — recovering structure from calibrated data or
+> simulation output. It is **not** a tool for pulling real laws out of raw,
+> systematics-dominated experimental measurements; separating true physics from
+> systematic error is a genuinely harder problem and TIMUR does not claim to
+> solve it. Benchmarks below use synthetic data generated from known laws (the
+> standard way symbolic-regression methods are validated), with added noise.
+
+---
 
 ## Installation
+
 ```bash
 pip install --upgrade timur-xai
-python -c "import pysr; pysr.install()"
 ```
+
+The core engine (dimensional analysis + analytic discovery + PINN) needs only
+NumPy, SciPy, SymPy, scikit-learn and PyTorch.
+
+**Optional — genetic symbolic regression.** Laws that don't reduce to a simple
+analytic form (e.g. Planck) use [PySR](https://github.com/MilesCranmer/PySR),
+which installs a Julia backend on first import. This needs internet and can take
+a few minutes the first time. You only need it for the evolutionary examples; the
+Quick Start below runs without it.
+
+---
 
 ## Quick Start
+
+Runs in seconds, no PySR/Julia required. TIMUR recovers the Stefan–Boltzmann law
+`j = σ·T⁴` from noisy data:
+
 ```python
-from timur import TIMURModel
+import numpy as np
 import scipy.constants as const
+from timur import TIMURModel
 
-# Initialize the engine with dimensional awareness (Example: Planck's Law)
+# Generate data from j = σ·T⁴, with 1% noise
+np.random.seed(0)
+T = np.random.uniform(100, 2000, 500)
+X = T.reshape(-1, 1)
+y = const.sigma * T**4
+y *= 1 + np.random.normal(0, 0.01, size=y.shape)
+
 model = TIMURModel(
-    feature_names=["wavelength", "temperature"],
-    feature_dims=[{"m": 1}, {"K": 1}],
-    target_dim={"kg": 1, "m": -1, "s": -3},
-    constants={
-        "h":  (const.h, {"kg": 1, "m": 2, "s": -1}),
-        "c":  (const.c, {"m": 1, "s": -1}),
-        "kB": (const.k, {"kg": 1, "m": 2, "s": -2, "K": -1})
-    },
-    linear_threshold=0.15,
-    pysr_threshold=0.20, # Set to 0.0 to force evolutionary genetic discovery
-    verbose=True
+    feature_names=["temperature"],
+    feature_dims=[{"K": 1}],
+    target_dim={"kg": 1, "s": -3},
+    constants={"sigma": (const.sigma, {"kg": 1, "s": -3, "K": -4})},
+    verbose=False,
 )
-
-# TIMUR will autonomously discover the dimensionless Pi law and train the PINN
 model.fit(X, y)
-
-# Output the symbolic XAI discovery report
 print(model.get_xai_report())
+# Discovered:  y = temperature⁴ · sigma
 ```
 
-### 🚀 What's New in v1.2.0: Autonomous Discovery via MAP-Elites
+The report prints the recovered dimensionless law and its SI form. (Note: the
+`Pretrain R²` / `Refine R²` fields in the report refer to the optional PINN
+refinement stage and read 0.0 for laws solved purely analytically — the fit
+quality for those is the R² reported by the evolutionary benchmark, below.)
 
-`TIMURModel.fit()` is single-pass: it runs `discover()` once and returns one
-result. The new `timur/evolve/` layer sits on top of that — without changing
-any core `timur/`, `timur/symbolic/`, or `timur/pinn/` code — and turns TIMUR
-into a **black-box candidate generator** that is called repeatedly, scored,
-and archived for diversity instead of just accuracy.
+---
 
-* **MAP-Elites archive:** candidates are mapped into a 3-axis behavioral grid
-  — `(complexity, depth, operator_family)` — and only the single best (highest
-  fitness) candidate per cell is kept, preserving a diverse population of
-  equations instead of collapsing to one.
-* **Evolutionary loop:** `evolve()` seeds the archive with N bootstrap-resampled
-  TIMUR runs, then iterates M times — sample an elite, mutate it, re-evaluate,
-  and add it back if it's accepted — until `n_iterations` is reached or fitness
-  plateaus for `patience` iterations.
-* **Multi-layered physical judge (`judge.py`):** every candidate must clear up
-  to five independent tests before entering the archive:
-  1. **R² threshold** on a held-out validation split (default 0.5)
-  2. **Finiteness** — no NaN/Inf across a sampled input domain
-  3. **Limit / monotonicity behavior** (`LimitConstraint`) — e.g. finite at
-     zero/infinity, monotonic increasing/decreasing
-  4. **Symmetry** (`SymmetryConstraint`) — even/odd/scale invariance,
-     e.g. `f(a·x) = a^k·f(x)`
-  5. **Conservation** (`ConservationConstraint`) — a trapezoidal-integral
-     check against an expected constant or axis-independence
+## How it works
 
-  Dimensional consistency is not a separate test: since every candidate is
-  already generated in Buckingham Pi space, it's structurally guaranteed.
-  All constraint types are optional and None-safe — omitting them just skips
-  that test.
+1. **Dimensional reduction.** Given features, target, and constants with their
+   dimensions, TIMUR computes the null space of the dimensional matrix and forms
+   the dimensionless Buckingham π groups automatically — no manual group-picking.
 
-### Five-Law Benchmark Validation
+2. **Discovery in π-space.** A gatekeeper checks how nonlinear the reduced target
+   is and routes it: a linear/analytic solver when the dimensionless law is
+   simple, or genetic symbolic regression (PySR) when it needs exponential,
+   fractional or trigonometric structure.
 
-`evolve_benchmark.py` runs the full evolutionary loop against five physical
-laws (same data-generation logic as `timur_benchmark.py`):
+3. **Inverse transform.** The discovered dimensionless invariant is mapped back
+   into exact SI units.
 
-| Law | R² | Status |
+4. **PINN refinement (optional).** When the π group is a non-trivial function
+   rather than a constant, the result can be refined as a differentiable
+   PyTorch model.
+
+5. **Physical judge.** Candidates are filtered by up to five independent checks
+   before being accepted (see below).
+
+---
+
+## The physical judge
+
+High R² does not mean physically correct. Each candidate must clear up to five
+independent, toggleable tests:
+
+1. **R² threshold** on a held-out validation split (default 0.5).
+2. **Finiteness** — no NaN/Inf across a sampled input domain.
+3. **Limit / monotonicity** — e.g. finite as `x→0` or `x→∞`, monotonic in a
+   given variable (`LimitConstraint`).
+4. **Symmetry** — even/odd or scale invariance, e.g. `f(a·x) = aᵏ·f(x)`
+   (`SymmetryConstraint`).
+5. **Conservation** — a trapezoidal-integral check against an expected constant
+   or axis-independence (`ConservationConstraint`).
+
+**Important:** the symmetry and conservation constraints are ones *you encode*
+for a given problem — the judge enforces the physical priors you supply, it does
+not infer them on its own. Dimensional consistency is the one automatic
+guarantee, since every candidate is generated in π-space to begin with. All
+constraint types are optional and None-safe; omitting one just skips that test.
+
+---
+
+## Benchmark
+
+`evolve_benchmark.py` runs the full evolutionary loop (MAP-Elites archive +
+judge) against five laws, using synthetic data with added noise. Best recovered
+candidate per law:
+
+| Law | R² | Recovered form |
 |---|---|---|
-| DS1 — Planck Blackbody Radiation | 0.7756 | ✓ Passed |
-| DS2 — Stefan-Boltzmann Power Density | 1.0000 | ✓ Passed |
-| DS3 — Stokes' Drag Force | 1.0000 | ✓ Passed |
-| DS4 — Gravitational Potential Energy | 0.9974 | ✓ Passed |
-| DS5 — Wien's Displacement Law | 1.0000 | ✓ Passed |
+| Planck black-body radiation | 0.9999 | `2 / (exp(1/Π) − 1)` structure in `Π = λkT/hc` |
+| Stefan–Boltzmann | 0.9999 | `T⁴ · σ` |
+| Stokes' drag | 0.9999 | `≈6π · η·r·v`  (recovered coefficient 18.86 vs 6π ≈ 18.85) |
+| Gravitational potential energy | 0.9999 | `Π(m₁⁻¹·m₂)` |
+| Wien's displacement | 0.9998 | `T⁻¹ · b` |
 
-Archived candidates for each law are in `evolve_benchmark_results/`. See
-`timur/evolve/README.md` for architecture details and `evolve_demo.py` /
-`evolve_demo_planck.py` for end-to-end runnable examples.
+The Planck run is the interesting one: dimensional analysis alone only tells you
+`Π₁ = f(Π₂)` — it never gives you `f`. TIMUR found the dimensionless group on its
+own *and* recovered the `exp`/fraction structure of `f`, with constants landing
+almost exactly on their true values. Archived candidates for every law are in
+`evolve_benchmark_results/`.
+
+See `timur/evolve/README.md` for the MAP-Elites architecture, and
+`evolve_demo.py` / `evolve_demo_planck.py` for runnable end-to-end examples.
+
+---
+
+## MAP-Elites archive
+
+`TIMURModel.fit()` is single-pass. The `timur/evolve/` layer sits on top without
+touching the core engine and turns TIMUR into a candidate generator that's called
+repeatedly, scored, and archived for *diversity* rather than just accuracy:
+candidates are placed in a 3-axis grid — `(complexity, depth, operator_family)` —
+keeping the best expression per cell. This exposes the accuracy-vs-simplicity
+tradeoff instead of collapsing to a single winner.
+
+---
 
 ## License
 
-TIMUR-XAI is released under the **MIT License** — free for any use, including commercial, closed-source, and research. No permission needed. Just keep the copyright notice.
-
-See the [LICENSE](LICENSE) file for details.
+MIT — free for any use, including commercial and closed-source. Just keep the
+copyright notice. See [LICENSE](LICENSE).
